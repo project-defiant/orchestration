@@ -127,13 +127,20 @@ steps:
   pts_so:
     depends_on:
       - pis_so
-  pts_target:
+  pts_target_preprocess:
     depends_on:
       - pis_target
   pts_target_safety:
     depends_on:
       - pts_pharmacogenetics
-  pts_target_gene_essentiality:
+  pts_target:
+    num_partitions: 10
+    depends_on:
+      - pts_disease
+      - etl_reactome
+      - pts_target_safety
+      - pts_target_preprocess
+  pts_gene_essentiality:
     depends_on:
       - pis_target
   pts_pharmacogenetics:
@@ -147,69 +154,69 @@ steps:
     depends_on:
       - etl_literature
       - pis_literature
-      - etl_target
+      - pts_target
       - pts_disease
   pts_evidence_postprocess_gwas_credible_sets:
     depends_on:
       - gentropy_l2g_evidence
       - pis_literature
       - pts_disease
-      - etl_target
+      - pts_target
       - pis_literature
   pts_evidence_postprocess_expression_atlas:
     depends_on:
       - pis_evidence_expression_atlas
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_cosmic:
     depends_on:
       - pis_evidence_cosmic
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_clinvar:
     depends_on:
       - pis_evidence_eva
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_clinvar_somatic:
     depends_on:
       - pis_evidence_eva
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_reactome:
     depends_on:
       - pis_evidence_reactome
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_uniprot_literature:
     depends_on:
       - pis_evidence_uniprot_literature
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_uniprot_variants:
     depends_on:
       - pis_evidence_uniprot_variants
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_encore:
     ppp_only: true
     depends_on:
       - pis_evidence_ppp # TODO: split
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_postprocess_validation_lab:
     ppp_only: true
     depends_on:
       - pis_evidence_ppp # TODO: split
-      - etl_target
+      - pts_target
       - pts_disease
   # Evidence processed by PTS
   pts_evidence_project_score:
@@ -219,7 +226,7 @@ steps:
   pts_evidence_postprocess_project_score:
     depends_on:
       - pts_evidence_project_score
-      - etl_target
+      - pts_target
       - pts_disease
   pts_evidence_gene_burden:
     depends_on:
@@ -228,7 +235,7 @@ steps:
   pts_evidence_postprocess_gene_burden:
     depends_on:
       - pts_evidence_gene_burden
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_clinical_precedence:
@@ -247,7 +254,7 @@ steps:
       - pts_evidence_cancer_biomarkers
       - pts_disease
       - pis_literature
-      - etl_target
+      - pts_target
   pts_evidence_orphanet:
     depends_on:
       - pis_evidence_orphanet
@@ -255,7 +262,7 @@ steps:
   pts_evidence_postprocess_orphanet:
     depends_on:
       - pts_evidence_orphanet
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_clingen:
@@ -265,7 +272,7 @@ steps:
   pts_evidence_postprocess_clingen:
     depends_on:
       - pts_evidence_clingen
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_impc:
@@ -276,7 +283,7 @@ steps:
     num_partitions: 100
     depends_on:
       - pts_evidence_impc
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_panel_app:
@@ -286,7 +293,7 @@ steps:
   pts_evidence_postprocess_panel_app:
     depends_on:
       - pts_evidence_panel_app
-      - etl_target
+      - pts_target
       - pis_literature
       - pts_disease
   pts_evidence_crispr_screens:
@@ -295,7 +302,7 @@ steps:
   pts_evidence_postprocess_crispr_screens:
     depends_on:
       - pts_evidence_crispr_screens
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_gene2phenotype:
@@ -305,7 +312,7 @@ steps:
   pts_evidence_postprocess_gene2phenotype:
     depends_on:
       - pts_evidence_gene2phenotype
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_intogen:
@@ -314,7 +321,7 @@ steps:
   pts_evidence_postprocess_intogen:
     depends_on:
       - pts_evidence_intogen
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
   pts_evidence_ot_crispr:
@@ -325,7 +332,7 @@ steps:
     ppp_only: true
     depends_on:
       - pts_evidence_ot_crispr
-      - etl_target
+      - pts_target
       - pts_disease
       - pis_literature
 
@@ -339,7 +346,7 @@ steps:
   pts_drug_mechanism_of_action:
     depends_on:
       - pis_drug
-      - pts_target
+      - pts_target_preprocess
   pts_drug_molecule:
     depends_on:
       - pts_chemical_probes
@@ -415,23 +422,15 @@ steps:
     depends_on:
       - pis_otar
       - pts_disease
-  etl_target:
-    num_partitions: 10
-    depends_on:
-      - pts_disease
-      - pts_target
-      - etl_reactome
-      - pts_target_safety
-      - pts_target_gene_essentiality
   etl_search_facet:
     depends_on:
       - pts_disease
       - pts_go
-      - etl_target
+      - pts_target
   etl_interaction:
     depends_on:
       - pis_interaction
-      - etl_target
+      - pts_target
   etl_openfda:
     depends_on:
       - pts_openfda
@@ -457,15 +456,14 @@ steps:
   gentropy_enhancer_to_gene:
     depends_on:
       - pis_encode
-      - etl_target
+      - pts_target
       - gentropy_biosample
   gentropy_study:
     depends_on:
       - pis_gwas
       - pis_molqtl
-      - pts_target
       - pts_disease
-      - etl_target
+      - pts_target
       - gentropy_biosample
     depends_on_ppp:
       - pis_gwas_ppp
