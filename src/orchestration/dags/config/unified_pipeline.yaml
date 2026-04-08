@@ -143,6 +143,7 @@ steps:
   pts_gene_essentiality:
     depends_on:
       - pis_target
+      - pts_target
   pts_pharmacogenetics:
     depends_on:
       - pis_pharmacogenetics
